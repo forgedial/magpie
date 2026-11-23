@@ -140,6 +140,7 @@ func mapModelRefs(f *file, to func(string) string) {
 	}
 	for j := range f.Groups {
 		g := &f.Groups[j]
+		g.RequestModelProviders = mappedRequestModelProviders(*g, to)
 		for k, m := range g.Members {
 			g.Members[k] = to(m)
 		}

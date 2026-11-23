@@ -4013,6 +4013,12 @@ func Resolve(id string) (Provider, string, bool) {
 	// asking, but a value in its settings still has it
 	id = ThroughSelf(strings.TrimSuffix(strings.TrimSpace(id), "[1m]"))
 	if IsGroupRef(id) {
+		if strings.Contains(id, "@") {
+			if _, ms, ok := FindGroup(id); ok && len(ms) > 0 {
+				return ms[0].Provider, ms[0].Model, true
+			}
+			return Provider{}, "", false
+		}
 		// the groups' entries first: Catalog copies every entry, and was
 		// built for each group an agent's settings name (the window's drift
 		// poll, every 15s)

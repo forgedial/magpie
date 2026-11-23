@@ -720,7 +720,7 @@ func Update(action string, in Change) (string, error) {
 			}
 			held := HeldModels(keys[i].Models, keys[i].Accounts)
 			for name, target := range as {
-				if !ModelAllowed(held, target) {
+				if !ModelAllowed(held, aliasScope(target)) {
 					return "", fmt.Errorf("The key may not use %s, so it can't name it %s: add it to the key's models first", target, name)
 				}
 			}
