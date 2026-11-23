@@ -1478,12 +1478,13 @@ named members remain the group's stable identities, so their weights,
 rules, account pins and affinity remain in force across requested models.
 An ordinary `group/pool` request still uses its configured member models.
 
-This is an opt-in backend interface, configured in the file; the editor
-does not offer controls for it. Saving from an editor that omits the field
-preserves it; an explicit empty list clears it. Opt-in groups have no nested
-groups or model patterns and name each opted-in provider once. Its named
-member must remain selected and enabled to participate. Existing groups
-without the opt-in reject parameterized requests. See `TestGroupRequestedModel`,
+This is an opt-in interface. The Routing Web editor exposes a **Requested
+model providers** multi-select for eligible direct provider members; the
+choice is saved as `requestModelProviders`. Saving from an older editor that
+omits the field preserves it; an explicit empty list clears it. Opt-in groups
+have no nested groups or model patterns and name each opted-in provider once.
+Its named member must remain selected and enabled to participate. Existing
+groups without the opt-in reject parameterized requests. See `TestGroupRequestedModel`,
 `TestRequestedModelGroupKeepsWeights` and
 `TestRequestedModelKeyAliasesKeepGroupBoundary`.
 

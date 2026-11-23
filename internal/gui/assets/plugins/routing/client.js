@@ -6757,7 +6757,7 @@ function routingPage(part) {
   // there, rather than leaving the slot empty.
   const openGroupEditor = async (g) => {
     if (groupDirty() && !(await confirmDiscard())) return false;
-    gEdit = { id: g.id, draft: { name: g.name, note: g.note || "", members: [...g.members], match: [...(g.match || [])], matched: [...(g.matched || [])], fast: [...(g.fast || [])], ultra: [...(g.ultra || [])], off: [...(g.off || [])], weights: { ...(g.weights || {}) }, effortMaps: Object.fromEntries(Object.entries(g.effortMaps || {}).map(([id, m]) => [id, { ...m }])), accounts: [...(g.accounts || [])], keys: [...(g.keys || [])], redact: g.redact || "", routing: g.routing || "", pick: g.pick || "", affinity: g.affinity || "", sink: sinkModeOf(g), unlists: !!g.unlists, firstToken: g.firstToken || 0, patience: g.patience || 0, context: g.context || 0, compact: g.compact || 0, classifier: g.classifier || "", intentSure: g.intentSure ?? null, effort: g.effort || "", levels: [...(g.levels || [])], rules: (g.rules || []).map((r) => ({ ...r, ...(r.more?.length ? { more: [...r.more] } : {}), intent: r.intent || "", agents: [...(r.agents || [])], folders: [...(r.folders || [])], exceptFolders: [...(r.exceptFolders || [])], where: (r.where || []).map((c) => ({ ...c })), time: r.time ? { ...r.time, days: [...(r.time.days || [])] } : null })) } };
+    gEdit = { id: g.id, draft: { name: g.name, note: g.note || "", members: [...g.members], requestModelProviders: [...(g.requestModelProviders || [])], match: [...(g.match || [])], matched: [...(g.matched || [])], fast: [...(g.fast || [])], ultra: [...(g.ultra || [])], off: [...(g.off || [])], weights: { ...(g.weights || {}) }, effortMaps: Object.fromEntries(Object.entries(g.effortMaps || {}).map(([id, m]) => [id, { ...m }])), accounts: [...(g.accounts || [])], keys: [...(g.keys || [])], redact: g.redact || "", routing: g.routing || "", pick: g.pick || "", affinity: g.affinity || "", sink: sinkModeOf(g), unlists: !!g.unlists, firstToken: g.firstToken || 0, patience: g.patience || 0, context: g.context || 0, compact: g.compact || 0, classifier: g.classifier || "", intentSure: g.intentSure ?? null, effort: g.effort || "", levels: [...(g.levels || [])], rules: (g.rules || []).map((r) => ({ ...r, ...(r.more?.length ? { more: [...r.more] } : {}), intent: r.intent || "", agents: [...(r.agents || [])], folders: [...(r.folders || [])], exceptFolders: [...(r.exceptFolders || [])], where: (r.where || []).map((c) => ({ ...c })), time: r.time ? { ...r.time, days: [...(r.time.days || [])] } : null })) } };
     renderGroups();
     return true;
   };
@@ -7659,7 +7659,7 @@ function routingPage(part) {
         closeProtoMenu();
         if (v === cur || (groupDirty() && !(await confirmDiscard()))) return b.focus({ preventScroll: true });
         const n = opts.find(([id]) => id === v)?.[1] || v;
-        await groupAction("save", { id: g.id, name: g.name, note: g.note || "", members: namedOf(g), match: g.match || [], routing: v, pick: g.pick || "", affinity: g.affinity || "", sink: !!g.sink && sinkable(v), noSink: !!g.noSink, firstToken: g.firstToken || 0, patience: g.patience || 0, rules: g.rules || [], effort: g.effort || "", classifier: g.classifier || "", intentSure: g.intentSure ?? null, context: g.context || 0, compact: g.compact || 0, levels: g.levels || [], family: g.family || "", fast: g.fast || [], ultra: g.ultra || [], off: g.off || [], weights: g.weights || {}, effortMaps: g.effortMaps || {}, accounts: g.accounts || [], unlists: !!g.unlists },
+        await groupAction("save", { id: g.id, name: g.name, note: g.note || "", members: namedOf(g), requestModelProviders: g.requestModelProviders || [], match: g.match || [], routing: v, pick: g.pick || "", affinity: g.affinity || "", sink: !!g.sink && sinkable(v), noSink: !!g.noSink, firstToken: g.firstToken || 0, patience: g.patience || 0, rules: g.rules || [], effort: g.effort || "", classifier: g.classifier || "", intentSure: g.intentSure ?? null, context: g.context || 0, compact: g.compact || 0, levels: g.levels || [], family: g.family || "", fast: g.fast || [], ultra: g.ultra || [], off: g.off || [], weights: g.weights || {}, effortMaps: g.effortMaps || {}, accounts: g.accounts || [], unlists: !!g.unlists },
           t("{name}: {routing}", { name: g.name, routing: t(n) }));
         // the rows were drawn anew: the keyboard stays on this one's routing
         gList.querySelector(`.rt-group[data-id="${CSS.escape(g.id)}"] .rt-groute`)?.focus({ preventScroll: true });
@@ -7795,7 +7795,7 @@ function routingPage(part) {
       b.onclick = (e) => {
         e.stopPropagation(); // the card opens the editor; this picks
         if (on) return;
-        groupAction("save", { id: g.id, name: g.name, note: g.note || "", members: namedOf(g), match: g.match || [], routing: "manual", pick: id, affinity: g.affinity || "", sink: !!g.sink, noSink: !!g.noSink, firstToken: g.firstToken || 0, patience: g.patience || 0, rules: g.rules || [], effort: g.effort || "", classifier: g.classifier || "", intentSure: g.intentSure ?? null, context: g.context || 0, compact: g.compact || 0, levels: g.levels || [], family: g.family || "", fast: g.fast || [], ultra: g.ultra || [], off: g.off || [], weights: g.weights || {}, effortMaps: g.effortMaps || {}, accounts: g.accounts || [], unlists: !!g.unlists },
+        groupAction("save", { id: g.id, name: g.name, note: g.note || "", members: namedOf(g), requestModelProviders: g.requestModelProviders || [], match: g.match || [], routing: "manual", pick: id, affinity: g.affinity || "", sink: !!g.sink, noSink: !!g.noSink, firstToken: g.firstToken || 0, patience: g.patience || 0, rules: g.rules || [], effort: g.effort || "", classifier: g.classifier || "", intentSure: g.intentSure ?? null, context: g.context || 0, compact: g.compact || 0, levels: g.levels || [], family: g.family || "", fast: g.fast || [], ultra: g.ultra || [], off: g.off || [], weights: g.weights || {}, effortMaps: g.effortMaps || {}, accounts: g.accounts || [], unlists: !!g.unlists },
           t("{name}: every request to {model}", { name: g.name, model: memberName(id) }));
       };
       box.append(b);
@@ -7807,7 +7807,7 @@ function routingPage(part) {
     // whoever opened it, a draft has what the editor and Add read: a group
     // made from a model (newGroupWith) had no fast, and Add threw on it
     // and did nothing (悠悠哥 on Discord)
-    for (const k of ["members", "match", "matched", "fast", "ultra", "off", "rules", "accounts", "keys"]) if (!Array.isArray(d[k])) d[k] = [];
+    for (const k of ["members", "requestModelProviders", "match", "matched", "fast", "ultra", "off", "rules", "accounts", "keys"]) if (!Array.isArray(d[k])) d[k] = [];
     if (!d.weights || typeof d.weights !== "object") d.weights = {};
     if (!d.effortMaps || typeof d.effortMaps !== "object") d.effortMaps = {};
     const ed = el("div", "editor rt-gedit");
@@ -8265,6 +8265,43 @@ function routingPage(part) {
     const mw = el("div");
     mw.append(box, el("div", "hint", t("The first answers for what the model can do. In order, they are tried top first.")));
     ed.append(el("label", "", t("Models")), mw);
+
+    // A requested-model group keeps one named member per opted-in provider,
+    // while changing only the model sent to that provider for
+    // group/<id>@<model>. The member remains the scheduling identity, so its
+    // weight, account, affinity and rules continue to apply across models.
+    const requestLabel = el("label", "rt-grequest-label", t("Requested model providers"));
+    const requestBox = el("div", "rt-grequest");
+    const requestHint = el("div", "hint", t("These providers receive the model named after the group; their selected member keeps its routing settings."));
+    const providerEntries = () => {
+      const counts = new Map(), rows = new Map();
+      for (const id of d.members) {
+        if (d.matched.includes(id) || subOf(id)) continue;
+        const info = infoOf(id), model = modelOf(id), [modelID] = splitMember(id), pid = model?.provider || info?.provider || modelID.split("/")[0];
+        if (!pid) continue;
+        counts.set(pid, (counts.get(pid) || 0) + 1);
+        if (!rows.has(pid)) rows.set(pid, { id, pid, name: model?.providerName || info?.name || pid, model: model?.name || info?.model || id });
+      }
+      if (d.match.length || d.members.some((id) => subOf(id))) return [];
+      return [...rows.values()].filter((x) => counts.get(x.pid) === 1);
+    };
+    const drawRequested = () => {
+      const options = providerEntries();
+      const available = new Set(options.map((x) => x.pid));
+      d.requestModelProviders = d.requestModelProviders.filter((pid) => available.has(pid));
+      const names = new Map(options.map((x) => [x.pid, x.name]));
+      const text = d.requestModelProviders.length === 0 ? t("None") : d.requestModelProviders.length === 1
+        ? names.get(d.requestModelProviders[0]) || d.requestModelProviders[0]
+        : t("{n} providers", { n: d.requestModelProviders.length });
+      const b = el("button", "rt-cond rt-greq-pick" + (d.requestModelProviders.length ? " on" : ""), text);
+      b.type = "button";
+      b.setAttribute("aria-label", `${t("Requested model providers")}: ${text}`);
+      b.title = t("Choose which direct provider members receive a model named after this group");
+      b.onclick = (ev) => openProtoMenu(b, options.map((x) => ({ v: x.pid, name: x.name, literalName: true, note: x.model })), d.requestModelProviders, (v) => { d.requestModelProviders = v; drawRequested(); }, "Requested model providers", "rt-greq-menu");
+      requestBox.replaceChildren(b, requestHint);
+    };
+    drawRequested();
+    ed.append(requestLabel, requestBox);
 
     // accounts (duanckham on X): a provider with several accounts, a
     // personal one and a company one, can be held to some of them in this
@@ -9464,10 +9501,11 @@ function routingPage(part) {
       }
       if (d.rules.some((r) => r.intent) && !d.classifier) return status(t("Choose the model that tells which intent a message is"), "warn");
       if (d.effort === "auto" && !d.classifier) return status(t("Choose the model that rates how hard a turn is"), "warn");
+      if (d.requestModelProviders.length && (d.match.length || d.members.some((id) => subOf(id)))) return status(t("Requested model providers need direct named members, without nested groups or model patterns"), "warn");
       if (own && !d.levels.length) return status(t("Pick a level to offer, or leave them to its models"), "warn");
       saveBtn.classList.add("busy");
       // refused, Add can be pressed again (busy, it takes no clicks)
-      groupAction("save", { id: idOf(), from: g?.id, name: d.name.trim() || idOf(), note: (d.note || "").trim(), members: namedOf(d), placed: d.members, match: d.match, routing: d.routing, pick: d.pick || "", affinity: d.affinity, sink: d.sink === "sink" && sinkable(d.routing), noSink: d.sink === "", firstToken: d.firstToken || 0, patience: d.patience || 0, rules: d.rules, effort: d.effort, classifier: d.rules.some((r) => r.intent) || d.effort === "auto" ? d.classifier : "", intentSure: d.intentSure ?? null, context: d.context || 0, compact: d.compact || 0, levels: own ? d.levels : [], family: g?.family || "", fast: d.fast.filter((x) => d.members.includes(x)), ultra: d.ultra.filter((x) => d.fast.includes(x) && d.members.includes(x)), off: d.off.filter((x) => d.members.includes(x)), weights: Object.fromEntries(Object.entries(d.weights).filter(([x, n]) => d.members.includes(x) && n > 1)), effortMaps: Object.fromEntries(Object.entries(d.effortMaps).filter(([x, m]) => d.members.includes(x) && Object.keys(m).length)), accounts: d.accounts.filter((a) => accountPids().includes(a.slice(0, a.indexOf("/")))), keys: d.keys, redact: d.redact || "follow", unlists: !!d.unlists }, t(g ? "{name} saved" : "{name} added", { name: d.name.trim() || idOf() }))
+      groupAction("save", { id: idOf(), from: g?.id, name: d.name.trim() || idOf(), note: (d.note || "").trim(), members: namedOf(d), requestModelProviders: [...d.requestModelProviders], placed: d.members, match: d.match, routing: d.routing, pick: d.pick || "", affinity: d.affinity, sink: d.sink === "sink" && sinkable(d.routing), noSink: d.sink === "", firstToken: d.firstToken || 0, patience: d.patience || 0, rules: d.rules, effort: d.effort, classifier: d.rules.some((r) => r.intent) || d.effort === "auto" ? d.classifier : "", intentSure: d.intentSure ?? null, context: d.context || 0, compact: d.compact || 0, levels: own ? d.levels : [], family: g?.family || "", fast: d.fast.filter((x) => d.members.includes(x)), ultra: d.ultra.filter((x) => d.fast.includes(x) && d.members.includes(x)), off: d.off.filter((x) => d.members.includes(x)), weights: Object.fromEntries(Object.entries(d.weights).filter(([x, n]) => d.members.includes(x) && n > 1)), effortMaps: Object.fromEntries(Object.entries(d.effortMaps).filter(([x, m]) => d.members.includes(x) && Object.keys(m).length)), accounts: d.accounts.filter((a) => accountPids().includes(a.slice(0, a.indexOf("/")))), keys: d.keys, redact: d.redact || "follow", unlists: !!d.unlists }, t(g ? "{name} saved" : "{name} added", { name: d.name.trim() || idOf() }))
         .then(() => saveBtn.classList.remove("busy"));
     };
     // what goes wrong is said where it is seen, never a click that does nothing

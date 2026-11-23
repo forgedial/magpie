@@ -807,6 +807,11 @@ body.window .rt-gedit > .bar { --vfoot: 8px; }
 .rt-gedit .ctx-wrap input.first-in { width: 64px; }
 .rt-gedit .ctx-wrap .first-unit { margin-left: -2px; color: var(--muted); font-size: 12px; }
 .rt-gedit .ctx-wrap .first-unit[hidden] { display: none; }
+.rt-grequest { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.rt-grequest .rt-greq-pick { max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rt-grequest .hint { flex-basis: 100%; margin-top: 0; }
+.rt-grequest-label { align-self: start; }
+.pop.proto-menu.rt-greq-menu { width: 300px; max-width: calc(100vw - 16px); }
 .rt-pool { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 12px 10px 14px; }
 .rt-pool .nm { flex: 1 1 12em; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
 .rt-pool .nm .ic { width: 16px; height: 16px; }
@@ -839,6 +844,8 @@ body.window .rt-gedit > .bar { --vfoot: 8px; }
   body.web .rt-gedit label { text-align: left; padding-top: 8px; }
   body.web .rt-gedit .rt-gadv .inner { grid-template-columns: minmax(0, 1fr); gap: 6px; }
   body.web .rt-gedit .segs { flex-wrap: wrap; }
+  body.web .rt-grequest { align-items: stretch; }
+  body.web .rt-grequest .rt-greq-pick { min-height: 44px; }
   body.web .rt-gedit .fbrow { flex-wrap: wrap; justify-content: normal; }
   body.web .rt-gedit .fbrow .n { flex: 1 1 calc(100% - 60px); white-space: normal; overflow-wrap: anywhere; }
   body.web .rt-gedit .fbrow > .grow { display: none; }
