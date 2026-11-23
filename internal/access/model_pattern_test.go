@@ -42,7 +42,7 @@ func TestCleanAliases(t *testing.T) {
 		t.Fatalf("%v %v", got, err)
 	}
 	for _, bad := range []map[string]string{
-		{"a b": "openai/gpt-5"}, {"re:x": "openai/gpt-5"}, {"x*": "openai/gpt-5"},
+		{"a b": "openai/gpt-5"}, {"re:x": "openai/gpt-5"},
 		{"fast": "gpt-5"}, {"fast": "openai/*"}, {"fast": "re:^gpt"}, {"openai/gpt-5": "openai/GPT-5"},
 		{"fast": ""}, {"": "openai/gpt-5"}, {"Fast": "openai/gpt-5", "fast": "openai/gpt-4"},
 	} {

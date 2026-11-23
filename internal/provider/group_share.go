@@ -188,6 +188,7 @@ func importGroup(text string, over bool) (Imported, error) {
 		return to
 	}
 	members, match := ownMembers(g)
+	g.RequestModelProviders = mappedRequestModelProviders(g, place)
 	g.Members = nil
 	for _, m := range members {
 		if to := place(m); to != "" && !slices.Contains(g.Members, to) {

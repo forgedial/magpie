@@ -203,6 +203,10 @@ type Group struct {
 	// agent or a vendor. Empty shows nothing (CleanNote).
 	Note    string   `json:"note,omitempty"`
 	Members []string `json:"members"` // "provider/model[:effort]" or "group/<id>", in order (see MemberEffort)
+	// RequestModelProviders opts direct members of these providers into
+	// group/<id>@<model> requests (group_request_model.go). Their named
+	// members stay the scheduling identities; only the vendor model changes.
+	RequestModelProviders []string `json:"requestModelProviders,omitempty"`
 	// Former are the ids it had before a rename (RenameGroup), newest
 	// last: a request still asking group/<old> is routed to it, until a
 	// group takes that id for its own (xinvxueyuan on Discord).
@@ -560,6 +564,7 @@ func cloneGroups(gs []Group) []Group {
 		g.Members, g.Match, g.Matched, g.Placed = slices.Clone(g.Members), slices.Clone(g.Match), slices.Clone(g.Matched), slices.Clone(g.Placed)
 		g.Off, g.Levels, g.Fast, g.Ultra = slices.Clone(g.Off), slices.Clone(g.Levels), slices.Clone(g.Fast), slices.Clone(g.Ultra)
 		g.Accounts, g.Seen, g.Keys = slices.Clone(g.Accounts), slices.Clone(g.Seen), slices.Clone(g.Keys)
+		g.RequestModelProviders = slices.Clone(g.RequestModelProviders)
 		g.Former = slices.Clone(g.Former)
 		g.Weights = maps.Clone(g.Weights)
 		g.EffortMaps = renamedEffortMaps(g.EffortMaps, func(m string) string { return m })
@@ -759,6 +764,7 @@ func (g Group) own() Group {
 	g.Accounts = slices.Clone(g.Accounts)
 	g.Keys = slices.Clone(g.Keys)
 	g.Seen = slices.Clone(g.Seen)
+	g.RequestModelProviders = slices.Clone(g.RequestModelProviders)
 	g.Former = slices.Clone(g.Former)
 	g.Weights = maps.Clone(g.Weights)
 	g.EffortMaps = renamedEffortMaps(g.EffortMaps, func(m string) string { return m })
@@ -1317,6 +1323,7 @@ func GroupFinder() func(id string) (Group, []Member, bool) {
 		read    bool
 	)
 	return func(id string) (Group, []Member, bool) {
+		id, requested, dynamic := strings.Cut(id, "@")
 		// the mark Claude Code puts on a 1M window rides on the group's
 		// id, as it does on a model's: GroupFor takes it off for the
 		// gateway, and a ref the gateway routes is a group here too
@@ -1329,9 +1336,17 @@ func GroupFinder() func(id string) (Group, []Member, bool) {
 			all, find = sharedGroupsIn(entries), heldFrom("entries by", entries, entriesBy)
 		}
 		if g, ok := routedGroupOf(all, gid); ok && !g.Disabled {
+			if dynamic && (len(g.RequestModelProviders) == 0 || !validRequestedModel(requested)) {
+				return Group{}, nil, false
+			}
 			groupsFound.Add(1)
 			g = cloneGroup(g)
-			return g, membersFound(entries, find, all, g, disabledNow(), nil), true
+			off := disabledNow()
+			ms := membersFound(entries, find, all, g, off, nil)
+			if dynamic {
+				ms = requestedModelMembers(entries, g, ms, requested, off)
+			}
+			return g, ms, true
 		}
 		return Group{}, nil, false
 	}
@@ -1999,6 +2014,9 @@ func SaveGroup(g Group) error {
 		return err
 	}
 	entries := providerEntries()
+	if err := cleanRequestModelProviders(&g, f.Groups); err != nil {
+		return err
+	}
 	// checked with what its patterns match now, so that a rule, a pick, a
 	// fast or an off member may name one of those
 	named := len(g.Members)

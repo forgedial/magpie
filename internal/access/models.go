@@ -219,7 +219,8 @@ const MaxAliases = 200
 // CleanAliases is a key's model names as kept: each name a key's client
 // asks by, mapped to the model it is, "<provider>/<model>" or a routing
 // group "group/<name>" (tsingchao on X). A name is one word of at most 120
-// characters that is no pattern.
+// characters, optionally a star glob. A glob may target group/<id>@$model
+// to keep the bare requested model name in an opted-in routing group.
 func CleanAliases(in map[string]string) (map[string]string, error) {
 	if len(in) > MaxAliases {
 		return nil, fmt.Errorf("A key can name at most %d models", MaxAliases)
@@ -233,14 +234,20 @@ func CleanAliases(in map[string]string) (map[string]string, error) {
 		if name == "" || target == "" {
 			return nil, errors.New("A model name needs both the name and the model it stands for")
 		}
-		if len(name) > 120 || strings.ContainsFunc(name, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) || r == '*' }) || IsPattern(name) {
-			return nil, errors.New("A model name is one word of at most 120 characters, with no * or re: pattern: " + name)
+		if len(name) > 120 || strings.ContainsFunc(name, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) || IsPattern(name) {
+			return nil, errors.New("A model name is one word of at most 120 characters, with no re: pattern: " + name)
 		}
 		if !strings.Contains(target, "/") || strings.HasPrefix(target, "/") || strings.HasSuffix(target, "/") || strings.Contains(target, "*") || IsPattern(target) || len(target) > 300 {
 			return nil, errors.New("A model name stands for one model, <provider>/<model> like openai/gpt-5: " + target)
 		}
 		if strings.EqualFold(name, target) {
 			return nil, errors.New("A model name must differ from the model: " + name)
+		}
+		if strings.Contains(target, "$model") {
+			group, suffix, ok := strings.Cut(target, "@")
+			if !strings.Contains(name, "*") || strings.ContainsAny(name, "/@#") || !ok || suffix != "$model" || !strings.HasPrefix(group, "group/") || len(group) <= len("group/") || strings.Contains(group[len("group/"):], "/") {
+				return nil, errors.New("$model needs a glob name and a group/<id>@$model target: " + name)
+			}
 		}
 		if slices.ContainsFunc(slices.Collect(maps.Keys(out)), func(o string) bool { return strings.EqualFold(o, name) }) {
 			return nil, errors.New("A model name is given once: " + name)
@@ -256,19 +263,48 @@ func CleanAliases(in map[string]string) (map[string]string, error) {
 // AliasFor is the model a name the key gives stands for, letter case aside.
 func (who Identity) AliasFor(name string) (string, bool) {
 	for a, t := range who.Aliases {
-		if strings.EqualFold(a, name) {
+		if !strings.Contains(a, "*") && strings.EqualFold(a, name) {
 			return t, true
 		}
+	}
+	// Exact names win, then the glob with most literal bytes. Lexical
+	// order breaks ties, so Go map order can never change a key's route.
+	names := slices.Sorted(maps.Keys(who.Aliases))
+	slices.SortStableFunc(names, func(a, b string) int {
+		return len(strings.ReplaceAll(b, "*", "")) - len(strings.ReplaceAll(a, "*", ""))
+	})
+	for _, a := range names {
+		if !strings.Contains(a, "*") || !globRe(a).MatchString(name) {
+			continue
+		}
+		target := who.Aliases[a]
+		if strings.Contains(target, "$model") {
+			if name == "" || len(name) > 120 || strings.ContainsAny(name, "/@*#") || strings.ContainsFunc(name, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) {
+				return "", false
+			}
+			target = strings.ReplaceAll(target, "$model", name)
+		}
+		return target, true
 	}
 	return "", false
 }
 
 // AliasOf is the name the key gives the model id, if it does (case aside).
 func (who Identity) AliasOf(id string) (string, bool) {
-	for a, t := range who.Aliases {
-		if strings.EqualFold(t, id) {
+	for _, a := range slices.Sorted(maps.Keys(who.Aliases)) {
+		if t := who.Aliases[a]; !strings.Contains(a, "*") && strings.EqualFold(t, id) {
 			return a, true
 		}
 	}
 	return "", false
+}
+
+// aliasScope is the permission an alias target needs. A parameterized
+// group is still that group; the requested model never grants another.
+func aliasScope(target string) string {
+	if strings.HasPrefix(target, "group/") {
+		group, _, _ := strings.Cut(target, "@")
+		return group
+	}
+	return target
 }
