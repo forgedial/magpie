@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"slices"
+	"sync"
 	"testing"
 
 	"github.com/yetone/magpie/internal/access"
@@ -55,10 +56,18 @@ func TestRequestedModelGroupKeepsWeights(t *testing.T) {
 
 func TestRequestedModelKeyAliasesKeepGroupBoundary(t *testing.T) {
 	fresh(t)
+	var mu sync.Mutex
 	var asked []string
+	seen := func() []string {
+		mu.Lock()
+		defer mu.Unlock()
+		return slices.Clone(asked)
+	}
 	vendor := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
+		mu.Lock()
 		asked = append(asked, modelOf(b))
+		mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		io.WriteString(w, `{"id":"fixture","choices":[{"message":{"role":"assistant","content":"ok"},"finish_reason":"stop"}]}`)
 	})
@@ -89,13 +98,13 @@ func TestRequestedModelKeyAliasesKeepGroupBoundary(t *testing.T) {
 			t.Fatalf("%s: %d %s", model, w.Code, w.Body.String())
 		}
 	}
-	if !slices.Equal(asked, []string{"gpt-base", "gpt-new", "gpt-new"}) {
-		t.Fatalf("models sent upstream: %v", asked)
+	if got := seen(); !slices.Equal(got, []string{"gpt-base", "gpt-new", "gpt-new"}) {
+		t.Fatalf("models sent upstream: %v", got)
 	}
-	before := len(asked)
+	before := len(seen())
 	for _, model := range []string{"group/pool@gpt-new", "gpt-new"} {
 		w := keyDo(h, secrets[1], "POST", "/v1/chat/completions", `{"model":"`+model+`","messages":[]}`)
-		if w.Code == 200 || len(asked) != before {
+		if w.Code == 200 || len(seen()) != before {
 			t.Fatalf("another key reached %s: %d", model, w.Code)
 		}
 	}
@@ -106,7 +115,7 @@ func TestRequestedModelKeyAliasesKeepGroupBoundary(t *testing.T) {
 		t.Fatal(err)
 	}
 	w := keyDo(h, secrets[0], "POST", "/v1/chat/completions", `{"model":"gpt-new","messages":[]}`)
-	if w.Code != 403 || len(asked) != before {
+	if w.Code != 403 || len(seen()) != before {
 		t.Fatalf("alias bypassed a revoked group: %d", w.Code)
 	}
 }
